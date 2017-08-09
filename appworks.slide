@@ -1,0 +1,161 @@
+高速成長下的產品重構
+Appworks CTO Club
+9 Aug 2017
+
+Kevin Li
+17 Media
+
+kevin@17.media
+https://www.linkedin.com/in/yunchiaoli/
+
+* Introduction
+
+17 is the leading live streaming apps in Taiwan, Japan, Hong Kong and Indonesia
+
+We have more than
+
+- 30 million Downloads
+
+* Why refactoring?
+
+Usually, to make a product survive, this is how you'll implement it:
+
+- < 10,000 DAU, write code without even thinking about maintainability
+- > 10,000 DAU, scale the service
+- > 100,000 DAU, scale the team, probably starting to clean some technical debt
+
+Without someone watching over the technical debt, it will become unmanageable
+
+* This is a story about refactoring our backend from 2016/3 to 2016/6
+
+* Business Challenges
+
+- Slow time-to-market of new feature
+- Obsolete self-designed streaming protocol
+- Unstable performance
+
+* Backend technical problems:
+
+- Self-designed streaming protocol
+- Spaghetti code (many functions are longer than 2000+ lines)
+- No abstraction
+- Obscure API interface
+- Inconsistent data types in databases
+- No DevOps tools and processes
+- Non-scalable design & infrastructure
+
+* Don't attempt to solve every problem at once
+
+* Think Twice before you rewrite any existing code
+
+.link https://google.com Things You Should Never Do, Part I -- Joel Spolsky
+
+"You are throwing away your market leadership.
+You are giving a gift of two or three years to your competitors,
+and believe me, that is a long time in software years."
+
+-- Joel Spolsky
+
+* Options?
+
+- Completely redesign + rewrite the backend from top (API) to bottom (Database)
+- Completely rewrite or partially rewrite?
+- Whether to change database schema?
+- Whether to change cache pattern?
+- Whether to change API interface?
+- Live transition or downtime transition?
+
+* Constraint?
+
+- Time constraint: no more than three months
+- Risk management: MUST deliver, so need to reduce risk to minimum
+- At least one person who has handled massive production traffic with the language
+
+* Define problem and constraint first
+
+and it became straightforward to decide the architecture.
+
+Here are the problems that we decided to solve:
+
+- Self-designed streaming protocol
+- Spaghetti code (partially)
+- Lack of DevOps process and tools
+- Non-scalable design & infrastructure
+
+* Architecture & Implementations
+
+- Rewrite the core business unit: live streaming module
+- With reverse proxy which dispatch requests to different cluster
+- Reverse proxy is also used for gradual launch
+
+.image appworks/architecture.png _ 500
+
+* Risk mitigation
+
+* It's a risky project
+
+Refactor a production codebase is like jumping to another airplane while still flying
+
+Therefore, we designed several ways to mitigate the risks:
+
+* Rist mitigation plans
+
+- DevOps Flow: Code review, Continuous integration, Unit test, (no stress test)
+- Datadog - Track number and response time of selected function calls (hundreds of data points)
+- Elastic Search - Log aggregation and searching tool
+- Small release - Break the refactor plan to multiple stages
+- Gradual launch - Launch each stage from 0% ~ 100%
+- Fallback - If there is any interface that's incompatible, we'll create a fallback
+- Rollback plan - Instantly release & rollback
+
+* How to roll out the refactor
+
+- Prepare the release candidate before 9 am
+- Gradual launch 20%, 40%, ... starting at 9 am
+- Rollback to 0% if any thing abnormal happened in monitor system
+- Usually, API latency is a reliable indicator
+- Trace the monitoring system to find out the cause
+- Fix and package the release candidate for the release next day
+- (After rolling out successfully) Postmortem for the rollout
+
+* Many unexpected problems
+
+- Switching cloud Redis providers
+- Dockerize all of the binaries
+- Inconsistent data types
+- Cache invalidation of two clusters
+- Obscure API interface
+- Distrust of the management team about the refactoring progress
+
+It's hard to estimate the timeline given those uncertainties
+
+
+* Something we achieved
+
+It took us nine deploys and two weeks to release successfully, but we got
+
+- Maintainable codebase with good abstraction
+- Monitored with datadog and elastic search
+- Improved time-to-market: Release at least one feature per week
+
+* Some lessons learned (how to decide)
+
+- Align the business need and technical design, balance time, quality and risk
+- Don't try to solve all the problems at once
+- Define problems and constraint, and the solution will be straightforward
+- Solve problem with many small iterations
+
+* Some lessons learned (how to program to make life easier)
+
+- Be very specific about every data type
+- Use linters
+- Use strong-typing language (e.g. golang) or type checker (e.g. flowjs)
+- Define your API interface with schema, e.g. JSON Schema
+- Use strong-typing database, e.g. PostgreSQL
+- Code review
+
+* Conclusion
+
+- Refactoring an existing product is a significant investment
+- Think about the goal, and the constraint
+- Design wisely and adopt DevOps flow to mitigate the risk

@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<!-- saved from url=(0038)http://localhost:3999/appworks.slide#1 -->
+<html class="gr__localhost"><script type="text/javascript">window["_gaUserPrefs"] = { ioo : function() { return true; } }</script><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta property="og:url"                content="https://ychiaoli18.github.io/talks/dist/appworks.htm" />
+    <meta property="og:type"               content="article" />
+    <meta property="og:title"              content="高速成長下的產品重構" />
+    <meta property="og:description"        content="How to design refactor plan wisely to address business need" />
+
+    <title>高速成長下的產品重構</title>
+    
+    <script>
+      var notesEnabled =  false ;
+    </script>
+    <script src="./appworks_files/slides.js"></script>
+
+    
+
+    <script>
+      
+      if (window["location"] && window["location"]["hostname"] == "talks.golang.org") {
+        var _gaq = _gaq || [];
+        _gaq.push(["_setAccount", "UA-11222381-6"]);
+        _gaq.push(["b._setAccount", "UA-49880327-6"]);
+        window.trackPageview = function() {
+          _gaq.push(["_trackPageview", location.pathname+location.hash]);
+          _gaq.push(["b._trackPageview", location.pathname+location.hash]);
+        };
+        window.trackPageview();
+        window.trackEvent = function(category, action, opt_label, opt_value, opt_noninteraction) {
+          _gaq.push(["_trackEvent", category, action, opt_label, opt_value, opt_noninteraction]);
+          _gaq.push(["b._trackEvent", category, action, opt_label, opt_value, opt_noninteraction]);
+        };
+      }
+    </script>
+  <meta name="viewport" content="width=1100,height=750"><meta name="apple-mobile-web-app-capable" content="yes"><style id="style-1-cropbar-clipper">/* Copyright 2014 Evernote Corporation. All rights reserved. */
+.en-markup-crop-options {
+    top: 18px !important;
+    left: 50% !important;
+    margin-left: -100px !important;
+    width: 200px !important;
+    border: 2px rgba(255,255,255,.38) solid !important;
+    border-radius: 4px !important;
+}
+
+.en-markup-crop-options div div:first-of-type {
+    margin-left: 0px !important;
+}
+</style></head>
+
+  <body style="display: none" data-gr-c-s-loaded="true" class="loaded">
+
+    <section class="slides layout-widescreen">
+
+      <article class="current">
+        <h1>高速成長下的產品重構</h1>
+        <h3>Appworks CTO Club</h3>
+        <h3>9 August 2017</h3>
+        
+          <div class="presenter">
+            
+  
+  <p>
+    Kevin Li
+  </p>
+  
+
+  
+  <p>
+    17 Media
+  </p>
+  
+
+          </div>
+        
+          <div class="presenter">
+            
+          </div>
+        
+      </article>
+
+  
+  
+      <article class="next">
+      
+        <h3>Introduction</h3>
+        
+  
+  <p>
+    17 is the leading live streaming apps in Taiwan, Japan, Hong Kong and Indonesia
+  </p>
+  
+
+  
+  <p>
+    We have more than
+  </p>
+  
+
+  <ul>
+  
+    <li>4 million MAUs</li>
+  
+    <li>30 million Downloads</li>
+  
+  </ul>
+
+      
+      </article>
+  
+  
+  
+      <article class="far-next">
+      
+        <h3>Why refactoring?</h3>
+        
+  
+  <p>
+    Usually, to make a product survive, this is how you'll implement it:
+  </p>
+  
+
+  <ul>
+  
+    <li>&lt; 10,000 DAU, write code without even thinking about maintainability</li>
+  
+    <li>&gt; 10,000 DAU, scale the service</li>
+  
+    <li>&gt; 100,000 DAU, scale the team, probably starting to clean some technical debt</li>
+  
+  </ul>
+
+  
+  <p>
+    Without someone watching over the technical debt, it will become unmanageable
+  </p>
+  
+
+      
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h2>This is a story about refactoring our backend from 2016/3 to 2016/6</h2>
+      
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Business Challenges</h3>
+        
+  <ul>
+  
+    <li>Slow time-to-market of new feature</li>
+  
+    <li>Obsolete self-designed streaming protocol</li>
+  
+    <li>Unstable performance</li>
+  
+  </ul>
+
+      
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Backend technical problems:</h3>
+        
+  <ul>
+  
+    <li>Self-designed streaming protocol</li>
+  
+    <li>Spaghetti code (many functions are longer than 2000+ lines)</li>
+  
+    <li>No abstraction</li>
+  
+    <li>Obscure API interface</li>
+  
+    <li>Inconsistent data types in databases</li>
+  
+    <li>No DevOps tools and processes</li>
+  
+    <li>Non-scalable design &amp; infrastructure</li>
+  
+  </ul>
+
+      
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h2>Don't attempt to solve every problem at once</h2>
+      
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Think Twice before you rewrite any existing code</h3>
+        <p class="link"><a href="https://google.com/" target="_blank">Things You Should Never Do, Part I -- Joel Spolsky</a></p>
+  
+  <p>
+    "You are throwing away your market leadership.
+<br>
+
+    You are giving a gift of two or three years to your competitors,
+<br>
+
+    and believe me, that is a long time in software years."
+  </p>
+  
+
+  
+  <p>
+    -- Joel Spolsky
+  </p>
+  
+
+      
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Options?</h3>
+        
+  <ul>
+  
+    <li>Completely redesign + rewrite the backend from top (API) to bottom (Database)</li>
+  
+    <li>Completely rewrite or partially rewrite?</li>
+  
+    <li>Whether to change database schema?</li>
+  
+    <li>Whether to change cache pattern?</li>
+  
+    <li>Whether to change API interface?</li>
+  
+    <li>Live transition or downtime transition?</li>
+  
+  </ul>
+
+      
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Constraint?</h3>
+        
+  <ul>
+  
+    <li>Time constraint: no more than three months</li>
+  
+    <li>Risk management: MUST deliver, so need to reduce risk to minimum</li>
+  
+    <li>At least one person who has handled massive production traffic with the language</li>
+  
+  </ul>
+
+      
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Define problem and constraint first</h3>
+        
+  
+  <p>
+    and it became straightforward to decide the architecture.
+  </p>
+  
+
+  
+  <p>
+    Here are the problems that we decided to solve:
+  </p>
+  
+
+  <ul>
+  
+    <li>Self-designed streaming protocol</li>
+  
+    <li>Spaghetti code (partially)</li>
+  
+    <li>Lack of DevOps process and tools</li>
+  
+    <li>Non-scalable design &amp; infrastructure</li>
+  
+  </ul>
+
+      
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Architecture &amp; Implementations</h3>
+        
+  <ul>
+  
+    <li>Rewrite the core business unit: live streaming module</li>
+  
+    <li>With reverse proxy which dispatch requests to different cluster</li>
+  
+    <li>Reverse proxy is also used for gradual launch</li>
+  
+  </ul>
+
+<div class="image">
+  <img src="./appworks_files/architecture.png" width="500">
+</div>
+
+      
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h2>Risk mitigation</h2>
+      
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>It's a risky project</h3>
+        
+  
+  <p>
+    Refactor a production codebase is like jumping to another airplane while still flying
+  </p>
+  
+
+  
+  <p>
+    Therefore, we designed several ways to mitigate the risks:
+  </p>
+  
+
+      
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Rist mitigation plans</h3>
+        
+  <ul>
+  
+    <li>DevOps Flow: Code review, Continuous integration, Unit test, (no stress test)</li>
+  
+    <li>Datadog - Track number and response time of selected function calls (hundreds of data points)</li>
+  
+    <li>Elastic Search - Log aggregation and searching tool</li>
+  
+    <li>Small release - Break the refactor plan to multiple stages</li>
+  
+    <li>Gradual launch - Launch each stage from 0% ~ 100%</li>
+  
+    <li>Fallback - If there is any interface that's incompatible, we'll create a fallback</li>
+  
+    <li>Rollback plan - Instantly release &amp; rollback</li>
+  
+  </ul>
+
+      
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>How to roll out the refactor</h3>
+        
+  <ul>
+  
+    <li>Prepare the release candidate before 9 am</li>
+  
+    <li>Gradual launch 20%, 40%, ... starting at 9 am</li>
+  
+    <li>Rollback to 0% if any thing abnormal happened in monitor system</li>
+  
+    <li>Usually, API latency is a reliable indicator</li>
+  
+    <li>Trace the monitoring system to find out the cause</li>
+  
+    <li>Fix and package the release candidate for the release next day</li>
+  
+    <li>(After rolling out successfully) Postmortem for the rollout</li>
+  
+  </ul>
+
+      
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Many unexpected problems</h3>
+        
+  <ul>
+  
+    <li>Switching cloud Redis providers</li>
+  
+    <li>Dockerize all of the binaries</li>
+  
+    <li>Inconsistent data types</li>
+  
+    <li>Cache invalidation of two clusters</li>
+  
+    <li>Obscure API interface</li>
+  
+    <li>Distrust of the management team about the refactoring progress</li>
+  
+  </ul>
+
+  
+  <p>
+    It's hard to estimate the timeline given those uncertainties
+  </p>
+  
+
+      
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Something we achieved</h3>
+        
+  
+  <p>
+    It took us nine deploys and two weeks to release successfully, but we got
+  </p>
+  
+
+  <ul>
+  
+    <li>Maintainable codebase with good abstraction</li>
+  
+    <li>Monitored with datadog and elastic search</li>
+  
+    <li>Improved time-to-market: Release at least one feature per week</li>
+  
+  </ul>
+
+      
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Some lessons learned (how to decide)</h3>
+        
+  <ul>
+  
+    <li>Align the business need and technical design, balance time, quality and risk</li>
+  
+    <li>Don't try to solve all the problems at once</li>
+  
+    <li>Define problems and constraint, and the solution will be straightforward</li>
+  
+    <li>Solve problem with many small iterations</li>
+  
+  </ul>
+
+      
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Some lessons learned (how to program to make life easier)</h3>
+        
+  <ul>
+  
+    <li>Be very specific about every data type</li>
+  
+    <li>Use linters</li>
+  
+    <li>Use strong-typing language (e.g. golang) or type checker (e.g. flowjs)</li>
+  
+    <li>Define your API interface with schema, e.g. JSON Schema</li>
+  
+    <li>Use strong-typing database, e.g. PostgreSQL</li>
+  
+    <li>Code review</li>
+  
+  </ul>
+
+      
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Conclusion</h3>
+        
+  <ul>
+  
+    <li>Refactoring an existing product is a significant investment</li>
+  
+    <li>Think about the goal, and the constraint</li>
+  
+    <li>Design wisely and adopt DevOps flow to mitigate the risk</li>
+  
+  </ul>
+
+      
+      </article>
+  
+  
+
+      <article class="">
+        <h3>Thank you</h3>
+        
+          <div class="presenter">
+            
+  
+  <p>
+    Kevin Li
+  </p>
+  
+
+  
+  <p>
+    17 Media
+  </p>
+  
+
+          </div>
+        
+          <div class="presenter">
+            <p class="link"><a href="mailto:kevin@17.media" target="_blank">kevin@17.media</a></p><p class="link"><a href="https://www.linkedin.com/in/yunchiaoli/" target="_blank">https://www.linkedin.com/in/yunchiaoli/</a></p>
+          </div>
+        
+      </article>
+
+    <div class="slide-area" id="prev-slide-area"></div><div class="slide-area" id="next-slide-area"></div></section>
+
+    <div id="help" style="display: none;">
+      Use the left and right arrow keys or click the left and right
+      edges of the page to navigate between slides.<br>
+      (Press 'H' or navigate to hide this message.)
+    </div>
+
+    
+    <script src="./appworks_files/play.js"></script>
+    
+
+    <script>
+      (function() {
+        
+        if (window["location"] && window["location"]["hostname"] == "talks.golang.org") {
+          var ga = document.createElement("script"); ga.type = "text/javascript"; ga.async = true;
+          ga.src = ("https:" == document.location.protocol ? "https://ssl" : "http://www") + ".google-analytics.com/ga.js";
+          var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ga, s);
+        }
+      })();
+    </script>
+  
+
+<link rel="stylesheet" type="text/css" href="./appworks_files/css"><link rel="stylesheet" type="text/css" href="./appworks_files/styles.css"></body><span class="gr__tooltip"><span class="gr__tooltip-content"></span><i class="gr__tooltip-logo"></i><span class="gr__triangle"></span></span></html>
